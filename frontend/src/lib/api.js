@@ -1,17 +1,17 @@
 import axios from 'axios'
 
-// Configurar la base URL de la API usando variable de entorno
+// 1. Configuración de la URL
+// Eliminamos '/api' del final porque tus componentes ya lo incluyen (ej: /api/auth/login)
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')
-const API_URL = `${API_BASE}/api`
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE, // <--- Solo la raíz (ej: localhost:8000 o railway.app)
   headers: {
     'Content-Type': 'application/json'
   }
 })
 
-// Interceptor para anadir el token JWT a todas las peticiones
+// 2. Interceptor: Pegar el Token si existe
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
@@ -23,15 +23,22 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// Interceptor para manejar errores de respuesta
+// 3. Interceptor: Manejar Sesión Caducada (401)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Si el error es 401 (No autorizado)
     if (error.response?.status === 401) {
-      // Token expirado o invalido
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/usuarios'
+      
+      // TRUCO IMPORTANTE: 
+      // Solo forzamos logout si NO estamos intentando loguearnos.
+      // Si estamos en la página de login (/usuarios) y falla la contraseña, 
+      // NO queremos recargar la página, queremos ver el error.
+      if (!window.location.pathname.includes('/usuarios')) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        window.location.href = '/usuarios'
+      }
     }
     return Promise.reject(error)
   }
