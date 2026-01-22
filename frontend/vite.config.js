@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   
-  // Configuración para desarrollo local (npm run dev)
+  // Configuración para desarrollo local
   server: {
     port: 5173,
     proxy: {
@@ -15,10 +15,10 @@ export default defineConfig({
     }
   },
 
-  // 👇 ESTO ES LO QUE NECESITAS PARA RAILWAY (npm run preview)
+  // 👇 ESTO ES LO QUE TE FALTA PARA QUE FUNCIONE EN LA NUBE
   preview: {
-    allowedHosts: true, // Permite que Railway muestre la página sin bloquearla
-    host: '0.0.0.0',    // Escucha en todas las interfaces de red
-    port: 4173          // Puerto por defecto (Railway usará el suyo automáticamente)
+    host: '0.0.0.0', // Escuchar en todas las direcciones (necesario para Docker/Railway)
+    port: 4173,      // Puerto estándar de preview
+    allowedHosts: true, // <--- LA CLAVE: Permite cualquier dominio de Railway
   }
 })
